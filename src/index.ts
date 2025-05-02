@@ -3,7 +3,6 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import RateLimit from 'hono-rate-limit';
 import { logger } from 'hono/logger';
-import { env } from 'hono/adapter';
 import messageRoutes from './routes/message.js';
 
 const app = new Hono();
@@ -12,18 +11,25 @@ const app = new Hono();
 app.use(logger());
 
 
-const { PORT = '3000', ALLOWED_ORIGINS = '' } = process.env as { PORT?: string; ALLOWED_ORIGINS?: string };
+const PORT = process.env.PORT || 3000;
 
-// CORS setup
-const allowedOrigins = ALLOWED_ORIGINS.split(',').map(o => o.trim());
 
 app.use(
+  '*',
   cors({
     origin: (origin) => {
-      return allowedOrigins.includes(origin ?? '') ? origin : '';
+      const allowed = [
+        'http://localhost:3000',
+        'https://lockit.up.railway.app',
+        'https://lockitt.netlify.app',
+      ];
+      return allowed.includes(origin ?? '') ? origin : '';
     },
+    allowHeaders: ['Content-Type'],
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
   })
 );
+
 
 // Rate limit for /message routes
 app.use('/message', RateLimit({
