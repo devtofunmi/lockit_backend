@@ -1,7 +1,9 @@
 import type { Context } from 'hono';
-import { PrismaClient } from '@prisma/client';
 
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+
+
 
 // Create a new message
 export const createMessage = async (c: Context) => {
