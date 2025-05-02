@@ -23,6 +23,7 @@ export const createMessage = async (c: Context) => {
   return c.json({ id: message.id });
 };
 
+
 // Retrieve and destroy the message (one-time read)
 export const getMessage = async (c: Context) => {
   const id = c.req.param('id');
