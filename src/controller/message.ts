@@ -7,14 +7,14 @@ const prisma = new PrismaClient();
 export const createMessage = async (c: Context) => {
   const body = await c.req.json();
 
-  if (!body.content) {
-    return c.json({ error: 'Content is required' }, 400);
+  if (!body.content || !body.key) {
+    return c.json({ error: 'Content and key are required' }, 400);
   }
 
-  // Generate expiration date from provided or default to 24 hours
-  const expiration = body.expiration ? new Date(body.expiration) : new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h from now
+  const expiration = body.expiration
+    ? new Date(body.expiration)
+    : new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  // If password protection is enabled, hash the password
   let passwordHash = null;
   if (body.password) {
     passwordHash = await bcrypt.hash(body.password, 10);
@@ -22,8 +22,8 @@ export const createMessage = async (c: Context) => {
 
   const message = await prisma.message.create({
     data: {
-      content: body.content,  // Assuming content is already encrypted
-      key: crypto.randomUUID(), // Generate a random key for this message
+      content: body.content,
+      key: body.key, // ✅ use client-side key
       expiresAt: expiration,
       selfDestruct: body.selfDestruct || false,
       passwordHash,
@@ -32,6 +32,7 @@ export const createMessage = async (c: Context) => {
 
   return c.json({ id: message.id, key: message.key });
 };
+
 
 
 // Retrieve and destroy the message (one-time read)
