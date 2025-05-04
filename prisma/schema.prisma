@@ -9,12 +9,16 @@ datasource db {
 
 
 model Message {
-  id        String   @id @default(cuid())
-  content   String
-  viewed    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  key       String   @default(uuid())
-} 
+  id            String   @id @default(cuid())
+  content       String
+  key           String
+  expiresAt     DateTime
+  selfDestruct  Boolean  @default(false)
+  passwordHash  String?  // For storing the hashed password
+  viewed        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 
 
