@@ -5,10 +5,13 @@ const messageRoutes = (app: Hono) => {
   // POST route to create a message
   app.post('/messages', async (c) => {
     try {
-      const { message, expirationMinutes, burnAfterReading, password } = await c.req.json();
+      // Get the request data (message, expirationMinutes, burnAfterReading, password)
+      const { content, expirationMinutes, burnAfterReading, password } = await c.req.json();
 
-      const newMessage = await createMessage(message, expirationMinutes, burnAfterReading, password);
+      // Call the createMessage function with proper parameters
+      const newMessage = await createMessage(content, expirationMinutes, burnAfterReading, password);
 
+      // Return the message ID in the response
       return c.json({ id: newMessage.id });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
