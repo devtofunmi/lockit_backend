@@ -48,7 +48,7 @@ app.get('/', (c) => c.json({ message: 'Lockit API is running.' }));
 
 
 app.onError((err, c) => {
-  console.error('Unhandled Error:', err);
+  console.error('Unhandled Error:', err.stack || err);
   return c.json({ error: 'Internal Server Error' }, 500);
 });
 

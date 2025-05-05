@@ -1,3 +1,4 @@
+// routes
 import { Hono } from 'hono';
 import { createMessage, getMessage } from '../controller/message.js';
 

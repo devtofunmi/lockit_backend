@@ -1,6 +1,8 @@
-// /prisma/prismaClient.ts
 import { PrismaClient } from '@prisma/client';
+// export const prisma = new PrismaClient();
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+    log: ['query', 'error', 'info', 'warn'],
+  });
+  
 
-export { prisma };

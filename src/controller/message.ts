@@ -1,3 +1,4 @@
+// controller
 import CryptoJS from 'crypto-js';
 import { prisma } from '../../prisma/prismaClient.js';
 
@@ -35,12 +36,20 @@ export const createMessage = async (
   const newMessage = await prisma.message.create({
     data: {
       message: encrypted,
-      expirationMinutes,
+      expirationMinutes: expirationMinutes ?? null,
       burnAfterReading,
       password: password ? true : false,
     },
   });
+  
 
+  console.log('Data going into Prisma:', {
+    message: encrypted,
+    expirationMinutes,
+    burnAfterReading,
+    password: password ? true : false,
+  });
+  
   return newMessage;
 };
 
