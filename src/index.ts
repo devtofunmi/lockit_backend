@@ -37,7 +37,7 @@ app.use(
 );
 
 
-// messageRoutes(app);
+
 messageRoutes(app);
 
 

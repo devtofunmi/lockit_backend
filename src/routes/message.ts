@@ -3,7 +3,7 @@ import { createMessage, getMessage } from '../controller/message.js';
 
 const messageRoutes = (app: Hono) => {
   // POST route to create a message
-  app.post('/messages', async (c) => {
+  app.post('/message', async (c) => {
     try {
       // Get the request data (message, expirationMinutes, burnAfterReading, password)
       const { message, expirationMinutes, burnAfterReading, password } = await c.req.json();
@@ -20,7 +20,7 @@ const messageRoutes = (app: Hono) => {
   });
 
   // GET route to fetch a message by ID
-  app.get('/messages/:id', async (c) => {
+  app.get('/message/:id', async (c) => {
     try {
       const { id } = c.req.param();
       const password = c.req.query('password') || null;
