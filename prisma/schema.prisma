@@ -8,15 +8,14 @@ datasource db {
 }
 
 
+
 model Message {
-  id           String   @id @default(cuid())
-  content      String
-  key          String   // Stored encryption key
-  passwordHash String?  // Optional hashed password
-  selfDestruct Boolean  @default(false)
-  viewed       Boolean  @default(false)
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
+  id                String   @id @default(cuid())
+  message           String
+  expirationMinutes Int?
+  burnAfterReading  Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 
