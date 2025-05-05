@@ -16,12 +16,16 @@ app.use(
         'http://localhost:3000',
         'https://lockit.up.railway.app',
         'https://lockitt.netlify.app',
-      ]
-      return allowedOrigins.includes(origin ?? '') ? origin : ''
+      ];
+      // Allow only the allowed origins
+      return allowedOrigins.includes(origin ?? '') ? origin : '';
     },
-    credentials: true
+    credentials: true, // Allow credentials (cookies, etc.)
+    allowMethods: ['GET', 'POST', 'OPTIONS'], // Allow specific methods
+    allowHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
   })
-)
+);
+
 
 
 app.use(logger());
