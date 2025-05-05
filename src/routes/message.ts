@@ -1,7 +1,5 @@
-// /routes/messageRoutes.ts
 import { Hono } from 'hono';
 import { createMessage, getMessage } from '../controller/message.js';
-
 
 const messageRoutes = (app: Hono) => {
   // POST route to create a message
@@ -18,11 +16,11 @@ const messageRoutes = (app: Hono) => {
     }
   });
 
-  // GET route to fetch a message by id
+  // GET route to fetch a message by ID
   app.get('/messages/:id', async (c) => {
     try {
       const { id } = c.req.param();
-      const { password } = await c.req.json(); // Assume the user provides a password to decrypt
+      const password = c.req.query('password') || null;
 
       const decryptedMessage = await getMessage(id, password);
 
@@ -35,4 +33,3 @@ const messageRoutes = (app: Hono) => {
 };
 
 export { messageRoutes };
-
