@@ -18,24 +18,34 @@ export const createMessage = async (
   burnAfterReading: boolean,
   password: string | null
 ) => {
-  // Use provided password or fallback to a default one
+  if (!message) {
+    throw new Error('Content is required'); // This is where your error is coming from!
+  }
+
+  console.log('Incoming values:', {
+    message,
+    expirationMinutes,
+    burnAfterReading,
+    password,
+  });
+
   const key = password || 'default_secret_key';
-  
-  // Encrypt the message
   const encrypted = encryptMessage(message, key);
 
-  // Save the encrypted message to the database
   const newMessage = await prisma.message.create({
     data: {
-      message: encrypted,  // Store the encrypted message
+      message: encrypted,
       expirationMinutes,
       burnAfterReading,
-      password: password ? true : false,  // Store if message is password-protected
+      password: password ? true : false,
     },
   });
 
   return newMessage;
 };
+
+
+
 
 export const getMessage = async (id: string, password: string | null) => {
   const message = await prisma.message.findUnique({ where: { id } });

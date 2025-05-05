@@ -5,19 +5,24 @@ const messageRoutes = (app: Hono) => {
   // POST route to create a message
   app.post('/message', async (c) => {
     try {
-      // Get the request data (message, expirationMinutes, burnAfterReading, password)
-      const { message, expirationMinutes, burnAfterReading, password } = await c.req.json();
-
-      // Call the createMessage function with proper parameters
+      const body = await c.req.json();
+      console.log('POST /message received:', body);
+  
+      const { message, expirationMinutes, burnAfterReading, password } = body;
+  
+      if (!message) {
+        throw new Error('Content is required');
+      }
+  
       const newMessage = await createMessage(message, expirationMinutes, burnAfterReading, password);
-
-      // Return the message ID in the response
       return c.json({ id: newMessage.id });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
       return c.json({ error: errorMessage }, 500);
     }
   });
+  
+  
 
   // GET route to fetch a message by ID
   app.get('/message/:id', async (c) => {
