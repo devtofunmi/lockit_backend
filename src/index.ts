@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import RateLimit from 'hono-rate-limit';
 import { logger } from 'hono/logger';
-import messageRoutes from './routes/message.js';
+import { messageRoutes } from './routes/message.js';
 
 const app = new Hono();
 
@@ -39,7 +39,7 @@ app.use('/message', RateLimit({
 }));
 
 // Routes
-app.route('/message', messageRoutes);
+messageRoutes(app);
 
 // Root route
 app.get('/', (c) => c.json({ message: 'Lockit API is running.' }));
