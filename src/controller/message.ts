@@ -18,18 +18,21 @@ export const createMessage = async (
   burnAfterReading: boolean,
   password: string | null
 ) => {
-  const encryptedMessage = encryptMessage(content, password || 'default_secret_key');
+  const key = password || 'default_secret_key';
+  const encryptedMessage = encryptMessage(content, key);
 
   const newMessage = await prisma.message.create({
     data: {
       message: encryptedMessage,
       expirationMinutes,
       burnAfterReading,
+      password: password ?? null,
     },
   });
 
   return newMessage;
 };
+
 
 export const getMessage = async (id: string, password: string | null) => {
   const message = await prisma.message.findUnique({ where: { id } });
