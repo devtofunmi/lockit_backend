@@ -32,7 +32,7 @@ const createMessage = async (
   return newMessage;
 };
 
-// Get a message by ID and decrypt
+// Get and decrypt a message
 const getMessage = async (id: string, password: string | null) => {
   const message = await prisma.message.findUnique({
     where: { id },
@@ -42,22 +42,23 @@ const getMessage = async (id: string, password: string | null) => {
     throw new Error('Message not found');
   }
 
-  // Check for expiration
-  if (message.expirationMinutes) {
-    const createdAt = message.createdAt;
-    const expirationTime = new Date(createdAt.getTime() + message.expirationMinutes * 60000);
-    const now = new Date();
-
-    if (now > expirationTime) {
+  // Check expiration
+  if (message.expirationMinutes !== null) {
+    const expirationTime = new Date(message.createdAt.getTime() + message.expirationMinutes * 60000);
+    if (new Date() > expirationTime) {
       await prisma.message.delete({ where: { id } });
       throw new Error('Message has expired');
     }
   }
 
-  let decryptedMessage;
+  let decrypted;
   try {
-    decryptedMessage = decryptMessage(message.message, password || 'default_secret_key');
-  } catch (err) {
+    decrypted = decryptMessage(message.message, password || 'default_secret_key');
+  } catch {
+    throw new Error('Incorrect password or message corrupt');
+  }
+
+  if (!decrypted) {
     throw new Error('Incorrect password or message corrupt');
   }
 
@@ -65,7 +66,7 @@ const getMessage = async (id: string, password: string | null) => {
     await prisma.message.delete({ where: { id } });
   }
 
-  return decryptedMessage;
+  return decrypted;
 };
 
 export { createMessage, getMessage };
