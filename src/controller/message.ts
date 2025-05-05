@@ -13,19 +13,16 @@ const decryptMessage = (encryptedMessage: string, key: string) => {
 };
 
 export const createMessage = async (
-  content: string,
+  message: string,
   expirationMinutes: number | null,
   burnAfterReading: boolean,
   password: string | null
 ) => {
-  const expiresAt = expirationMinutes
-    ? new Date(Date.now() + expirationMinutes * 60 * 1000)
-    : null;
 
   // Save the message to the database
   const newMessage = await prisma.message.create({
     data: {
-      message: content,  // Prisma schema expects 'message', not 'content'
+      message: message,  // Prisma schema expects 'message', not 'content'
       expirationMinutes,
       burnAfterReading,
       password,
