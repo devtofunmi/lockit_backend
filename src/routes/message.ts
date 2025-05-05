@@ -6,10 +6,10 @@ const messageRoutes = (app: Hono) => {
   app.post('/messages', async (c) => {
     try {
       // Get the request data (message, expirationMinutes, burnAfterReading, password)
-      const { content, expirationMinutes, burnAfterReading, password } = await c.req.json();
+      const { message, expirationMinutes, burnAfterReading, password } = await c.req.json();
 
       // Call the createMessage function with proper parameters
-      const newMessage = await createMessage(content, expirationMinutes, burnAfterReading, password);
+      const newMessage = await createMessage(message, expirationMinutes, burnAfterReading, password);
 
       // Return the message ID in the response
       return c.json({ id: newMessage.id });
