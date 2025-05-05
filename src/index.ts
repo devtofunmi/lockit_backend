@@ -10,20 +10,19 @@ const PORT = process.env.PORT || 3000;
 
 
 app.use(
-  '*',
   cors({
     origin: (origin) => {
-      const allowed = [
+      const allowedOrigins = [
         'http://localhost:3000',
         'https://lockit.up.railway.app',
         'https://lockitt.netlify.app',
-      ];
-      return allowed.includes(origin ?? '') ? origin : 'http://localhost:3000';
+      ]
+      return allowedOrigins.includes(origin ?? '') ? origin : ''
     },
-    allowHeaders: ['Content-Type'],
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true
   })
-);
+)
+
 
 app.use(logger());
 
