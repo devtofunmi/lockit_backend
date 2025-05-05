@@ -12,19 +12,18 @@ const decryptMessage = (encryptedMessage: string, key: string) => {
   return bytes.toString(CryptoJS.enc.Utf8);
 };
 
-// Create a new message
-const createMessage = async (
-  message: string,
+export const createMessage = async (
+  content: string,
   expirationMinutes: number | null,
   burnAfterReading: boolean,
   password: string | null
 ) => {
-  const encryptedMessage = encryptMessage(message, password || 'default_secret_key');
+  const encryptedMessage = encryptMessage(content, password || 'default_secret_key');
 
   const newMessage = await prisma.message.create({
     data: {
       message: encryptedMessage,
-      expirationMinutes: expirationMinutes ?? null,
+      expirationMinutes,
       burnAfterReading,
     },
   });
@@ -32,17 +31,11 @@ const createMessage = async (
   return newMessage;
 };
 
-// Get and decrypt a message
-const getMessage = async (id: string, password: string | null) => {
-  const message = await prisma.message.findUnique({
-    where: { id },
-  });
+export const getMessage = async (id: string, password: string | null) => {
+  const message = await prisma.message.findUnique({ where: { id } });
 
-  if (!message) {
-    throw new Error('Message not found');
-  }
+  if (!message) throw new Error('Message not found');
 
-  // Check expiration
   if (message.expirationMinutes !== null) {
     const expirationTime = new Date(message.createdAt.getTime() + message.expirationMinutes * 60000);
     if (new Date() > expirationTime) {
@@ -51,16 +44,8 @@ const getMessage = async (id: string, password: string | null) => {
     }
   }
 
-  let decrypted;
-  try {
-    decrypted = decryptMessage(message.message, password || 'default_secret_key');
-  } catch {
-    throw new Error('Incorrect password or message corrupt');
-  }
-
-  if (!decrypted) {
-    throw new Error('Incorrect password or message corrupt');
-  }
+  const decrypted = decryptMessage(message.message, password || 'default_secret_key');
+  if (!decrypted) throw new Error('Incorrect password or message corrupt');
 
   if (message.burnAfterReading) {
     await prisma.message.delete({ where: { id } });
@@ -68,5 +53,3 @@ const getMessage = async (id: string, password: string | null) => {
 
   return decrypted;
 };
-
-export { createMessage, getMessage };
