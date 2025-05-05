@@ -14,12 +14,12 @@ const decryptMessage = (encryptedMessage: string, key: string) => {
 
 // Create a new message
 const createMessage = async (
-  content: string,
+  message: string,
   expirationMinutes: number | null,
   burnAfterReading: boolean,
   password: string | null
 ) => {
-  const encryptedMessage = encryptMessage(content, password || 'default_secret_key');
+  const encryptedMessage = encryptMessage(message, password || 'default_secret_key');
 
   const newMessage = await prisma.message.create({
     data: {
