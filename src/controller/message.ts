@@ -20,7 +20,7 @@ export const createMessage = async (
   password: string | null
 ) => {
   if (!message) {
-    throw new Error('Content is required'); // This is where your error is coming from!
+    throw new Error('message is required');
   }
 
   console.log('Incoming values:', {
