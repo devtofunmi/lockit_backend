@@ -18,26 +18,31 @@ export const createMessage = async (
   burnAfterReading: boolean,
   password: string | null
 ) => {
+  // Use provided password or fallback to a default one
+  const key = password || 'default_secret_key';
+  
+  // Encrypt the message
+  const encrypted = encryptMessage(message, key);
 
-  // Save the message to the database
+  // Save the encrypted message to the database
   const newMessage = await prisma.message.create({
     data: {
-      message: message,  // Prisma schema expects 'message', not 'content'
+      message: encrypted,  // Store the encrypted message
       expirationMinutes,
       burnAfterReading,
-      password,
+      password: password ? true : false,  // Store if message is password-protected
     },
   });
 
   return newMessage;
 };
 
-
 export const getMessage = async (id: string, password: string | null) => {
   const message = await prisma.message.findUnique({ where: { id } });
 
   if (!message) throw new Error('Message not found');
 
+  // Check for message expiration
   if (message.expirationMinutes !== null) {
     const expirationTime = new Date(message.createdAt.getTime() + message.expirationMinutes * 60000);
     if (new Date() > expirationTime) {
@@ -46,9 +51,11 @@ export const getMessage = async (id: string, password: string | null) => {
     }
   }
 
+  // Decrypt the message
   const decrypted = decryptMessage(message.message, password || 'default_secret_key');
-  if (!decrypted) throw new Error('Incorrect password or message corrupt');
+  if (!decrypted) throw new Error('Incorrect password or message is corrupted');
 
+  // Handle burn-after-reading functionality
   if (message.burnAfterReading) {
     await prisma.message.delete({ where: { id } });
   }
