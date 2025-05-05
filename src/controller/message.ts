@@ -18,15 +18,14 @@ export const createMessage = async (
   burnAfterReading: boolean,
   password: string | null
 ) => {
-  const key = password || 'default_secret_key';
-  const encryptedMessage = encryptMessage(content, key);
+  const encryptedMessage = encryptMessage(content, password || 'default_secret_key');
 
   const newMessage = await prisma.message.create({
     data: {
-      message: encryptedMessage,
-      expirationMinutes,
+      message: encryptedMessage, 
+      expirationMinutes: expirationMinutes ?? null,
       burnAfterReading,
-      password: password ?? null,
+      password: password ?? null, 
     },
   });
 
