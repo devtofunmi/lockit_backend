@@ -18,14 +18,17 @@ export const createMessage = async (
   burnAfterReading: boolean,
   password: string | null
 ) => {
-  const encryptedMessage = encryptMessage(content, password || 'default_secret_key');
+  const expiresAt = expirationMinutes
+    ? new Date(Date.now() + expirationMinutes * 60 * 1000)
+    : null;
 
+  // Save the message to the database
   const newMessage = await prisma.message.create({
     data: {
-      message: encryptedMessage, 
-      expirationMinutes: expirationMinutes ?? null,
+      message: content,  // Prisma schema expects 'message', not 'content'
+      expirationMinutes,
       burnAfterReading,
-      password: password ?? null, 
+      password,
     },
   });
 
