@@ -1,76 +1,59 @@
-import type { Context } from 'hono';
-import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import CryptoJS from 'crypto-js';
+import { prisma } from '../../prisma/prismaClient.js';
 
-const prisma = new PrismaClient();
+const encryptMessage = (message: string, key: string) => {
+  return CryptoJS.AES.encrypt(message, key).toString();
+};
+
+const decryptMessage = (encryptedMessage: string, key: string) => {
+  const bytes = CryptoJS.AES.decrypt(encryptedMessage, key);
+  return bytes.toString(CryptoJS.enc.Utf8);
+};
 
 // Create a new message
-export const createMessage = async (c: Context) => {
-  const body = await c.req.json();
+const createMessage = async (
+  message: string,
+  expirationMinutes: number | null,
+  burnAfterReading: boolean,
+  password: string | null
+) => {
+  const encryptedMessage = encryptMessage(message, password || 'default_secret_key');
 
-  if (!body.content || !body.key) {
-    return c.json({ error: 'Content and key are required' }, 400);
-  }
-
-  const expiration = body.expiration
-    ? new Date(body.expiration)
-    : new Date(Date.now() + 24 * 60 * 60 * 1000); // Default 24h
-
-  let passwordHash = null;
-  if (body.password) {
-    passwordHash = await bcrypt.hash(body.password, 10);
-  }
-
-  const message = await prisma.message.create({
+  const newMessage = await prisma.message.create({
     data: {
-      content: body.content, // Should be already encrypted
-      key: body.key,
-      expiresAt: expiration,
-      selfDestruct: body.selfDestruct || false,
-      passwordHash,
-      viewed: false,
+      message: encryptedMessage,
+      expirationMinutes: expirationMinutes || null,
+      burnAfterReading,
     },
   });
 
-  return c.json({ id: message.id });
+  return newMessage;
 };
 
-// Retrieve and destroy the message (one-time read)
-export const getMessage = async (c: Context) => {
-  const id = c.req.param('id');
-  const key = c.req.param('key');
-  const password = c.req.query('password');
-
-  const message = await prisma.message.findUnique({ where: { id } });
-
-  if (
-    !message ||
-    message.key !== key ||
-    message.viewed ||
-    new Date() > message.expiresAt
-  ) {
-    return c.json({ error: 'Message expired, not found, or already viewed' }, 404);
-  }
-
-  if (message.passwordHash && !password) {
-    return c.json({ error: 'Password is required to view the message.' }, 403);
-  }
-
-  if (message.passwordHash && password) {
-    const isPasswordValid = await bcrypt.compare(password, message.passwordHash);
-    if (!isPasswordValid) {
-      return c.json({ error: 'Invalid password.' }, 403);
-    }
-  }
-
-  await prisma.message.update({
+// Retrieve a message by ID
+const getMessage = async (id: string, password: string | null) => {
+  const message = await prisma.message.findUnique({
     where: { id },
-    data: { viewed: true },
   });
 
-  if (message.selfDestruct) {
-    await prisma.message.delete({ where: { id } });
+  if (!message) {
+    throw new Error('Message not found');
   }
 
-  return c.json({ content: message.content });
+  let decryptedMessage;
+  try {
+    decryptedMessage = decryptMessage(message.message, password || 'default_secret_key');
+  } catch (err) {
+    throw new Error('Incorrect password or message corrupt');
+  }
+
+  if (message.burnAfterReading) {
+    await prisma.message.delete({
+      where: { id },
+    });
+  }
+
+  return decryptedMessage;
 };
+
+export { createMessage, getMessage };
